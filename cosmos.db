@@ -1,0 +1,12 @@
+param cosmosDbAccountName string
+
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2021-08-15' = {
+  name: cosmosDbAccountName
+  location: resourceGroup().location
+  kind: 'GlobalDocumentDB'
+  properties: {
+    databaseAccountOfferType: 'Standard'
+  }
+}
+
+output cosmosDbAccountResourceId string = cosmosDbAccount.id
