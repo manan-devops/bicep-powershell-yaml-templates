@@ -31,8 +31,6 @@ param tags object = {
   'deploymentGroup':'cosmosdb'
 }
 
-var roleDefinitionId = guid('sql-role-definition-', apiAppPrincipalId, cosmosDbAccount.id)
-var roleAssignmentId = guid(roleDefinitionId, apiAppPrincipalId, cosmosDbAccount.id)
 var roleDefinitionName = 'Cosmos_ReadWrite'
 var dataActions = [
   'Microsoft.DocumentDB/databaseAccounts/readMetadata'
