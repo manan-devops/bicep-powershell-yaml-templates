@@ -1,0 +1,48 @@
+trigger:
+  branches:
+    include:
+      - "*"
+
+variables:
+  system.debug: true
+  runOnAnyBranchButMain: not(startsWith(variables['Build.SourceBranch'], 'refs/heads/main'))
+  runOnMainBranch: startsWith(variables['Build.SourceBranch'], 'refs/heads/main')
+
+pr: none
+
+pool:
+  vmImage: "ubuntu-latest"
+
+stages:
+  - stage: test_stage
+    displayName: "Deploy booking IaC to Test"
+    condition: ${{ variables.runOnAnyBranchButMain }}
+    variables:
+      - template: ./variables/test.yml
+    jobs:
+      - template: templates/infra.yml
+        parameters:
+          azureResourceConnection: ${{ variables.azureResourceConnection }}
+          env: test
+
+  - stage: qa_stage
+    displayName: "Deploy booking IaC to QA"
+    condition: ${{ variables.runOnMainBranch }}
+    variables:
+      - template: ./variables/qa.yml
+    jobs:
+      - template: templates/infra.yml
+        parameters:
+          azureResourceConnection: ${{ variables.azureResourceConnection }}
+          env: qa
+
+  - stage: prod_stage
+    displayName: "Deploy booking IaC to Prod"
+    condition: and(succeeded('qa_stage'), ${{ variables.runOnMainBranch }})
+    variables:
+      - template: ./variables/prod.yml
+    jobs:
+      - template: templates/infra.yml
+        parameters:
+          azureResourceConnection: ${{ variables.azureResourceConnection }}
+          env: prod
