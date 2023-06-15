@@ -24,30 +24,30 @@ Import-DscResource -ModuleName  ComputerManagementDsc, ActiveDirectoryDsc, xDnsS
 	node localhost
 	{
 
-        LocalConfigurationManager
-        {
-            RebootNodeIfNeeded = $true
-        }
+        	LocalConfigurationManager
+        	{
+            	RebootNodeIfNeeded = $true
+        	}
 		
 		Computer Rename
 		{
-		  Name				= 'TINFAD01'
-		  #DependsOn			= '[DnsServerAddress]DNS-SINFAD01'
+	    	Name = 'TINFAD01'
 		}
 		
-        WaitforDisk Disk2
-        {
-            DiskId = 2
-            RetryIntervalSec =$RetryIntervalSec
-            RetryCount = $RetryCount
-        }
+        	WaitforDisk Disk2
+        	{	
+            	DiskId = 2
+            	RetryIntervalSec =$RetryIntervalSec
+            	RetryCount = $RetryCount
+       	 	}
 
-        Disk ADPrograms {
-            DiskId = 2
-            DriveLetter = "F"
-			FSFormat = "NTFS"
-            DependsOn = "[WaitForDisk]Disk2"
-        }
+        	Disk ADPrograms 
+		{
+            	DiskId = 2
+            	DriveLetter = "F"
+		FSFormat = "NTFS"
+            	DependsOn = "[WaitForDisk]Disk2"
+        	}
 		
 		File ADNTDSFiles
 		{
@@ -73,7 +73,9 @@ Import-DscResource -ModuleName  ComputerManagementDsc, ActiveDirectoryDsc, xDnsS
 		  DependsOn			= '[Computer]Rename'
 		}
 
-
+		#######################################
+		###########  Windows Features #########
+		#######################################
 
 		WindowsFeature 'ADDomainServices'
 		{
@@ -139,11 +141,11 @@ Import-DscResource -ModuleName  ComputerManagementDsc, ActiveDirectoryDsc, xDnsS
 		  DependsOn			= '[Computer]Rename'
 		}
 		
-       WindowsFeature 'ADDSInstall'
-        {
-            Ensure = "Present"
-            Name = "AD-Domain-Services"
-        }
+       		WindowsFeature 'ADDSInstall'
+        	{
+            	Ensure = "Present"
+            	Name = "AD-Domain-Services"
+        	}
 		
 		WindowsFeature 'RSATADDS'
 		{
@@ -152,12 +154,12 @@ Import-DscResource -ModuleName  ComputerManagementDsc, ActiveDirectoryDsc, xDnsS
 		  DependsOn			= '[Computer]Rename'
 		}
 
-        WindowsFeature 'ADDSTools'
-        {
-            Ensure = "Present"
-            Name = "RSAT-ADDS-Tools"
-            DependsOn = "[WindowsFeature]ADDSInstall"
-        }	
+        	WindowsFeature 'ADDSTools'
+        	{
+            	Ensure = "Present"
+            	Name = "RSAT-ADDS-Tools"
+            	DependsOn = "[WindowsFeature]ADDSInstall"
+        	}	
 
 		WindowsFeature 'RSATADTools'
 		{
@@ -212,7 +214,10 @@ Import-DscResource -ModuleName  ComputerManagementDsc, ActiveDirectoryDsc, xDnsS
 		{
 		  Name				="After Feature Install"
 		}
-		#######Join AD
+
+		#######################################
+		########### Domain Setup ##############
+		#######################################
 
 		WaitForADDomain DscForestWait
         	{
@@ -240,26 +245,9 @@ Import-DscResource -ModuleName  ComputerManagementDsc, ActiveDirectoryDsc, xDnsS
 		  Name				="After DC Promotion"
 		}
 
-#		WaitForADDomain DscDCWait
-#        	{
-#            	  DomainName 			= 'test-One.local'
-#            	  Credential	 		= $AdminCreds
-#            	  #RetryCount 			= 50
-#            	  #RetryIntervalSec 		= 30
-#            	  DependsOn 			= '[ADDomainController]CloudDC'
-#        	}
 		#######################################
 		###########  DNS Server Settings ######
 		#######################################
-
-        Registry ConfigureLocalNetPriorityNetMaskto16
-        {
-            Ensure          = 'Present'
-            Key             = 'HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\DNS\Parameters'
-            ValueName       = 'LocalNetPriorityNetMask'
-            Valuedata       = '65535'  #decimal for 0x0000FFFF
-            ValueType       = 'Dword'
-        }
 
 		xDnsServerSetting LocalnetPriority
 		{
@@ -273,17 +261,6 @@ Import-DscResource -ModuleName  ComputerManagementDsc, ActiveDirectoryDsc, xDnsS
 			RoundRobin		= $true
 		}
  
-        #######################################
-		###########  DNS Forwarder ############
-		#######################################
-		
-		xDnsServerForwarder AzureDNSForwarder
-    	{
-          IsSingleInstance			= 'Yes'
-          IPAddresses   			= '168.63.129.16'
-          UseRootHint 			    = $true
-		  DependsOn				    = '[PendingReboot]AfterDCPromotion'
-    	} 
 		
 		#######################################
 		###########  DNS Zones   ##############
