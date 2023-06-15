@@ -299,7 +299,7 @@ Import-DscResource -ModuleName  ComputerManagementDsc, ActiveDirectoryDsc, xDnsS
 		  ComputerName				= 'TSQLDB01'
 		  DnsHostName				= 'TSQLDB01.test-One.local'
 		  Path					= 'OU=CAD,OU=testOne Servers,DC=test-One,DC=local'
-		  Description				= 'Cloud testOne CAD DB Server 01'
+		  Description				= 'TSQL DB Server 01'
 		  EnabledOnCreation 			= $false
 		  DependsOn				= '[ADDomainController]CloudDC'
 		}
