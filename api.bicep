@@ -4,31 +4,31 @@ param env string
 @secure()
 param ddApiKey string
 param location string
-var cosmosDbKey = listKeys(resourceId(resourceGroup().name,'Microsoft.DocumentDB/databaseAccounts','cosmos-booking-cus-${env}'),'2022-05-15').primaryMasterKey
+var cosmosDbKey = listKeys(resourceId(resourceGroup().name, 'Microsoft.DocumentDB/databaseAccounts', 'cosmos-booking-cus-${env}'), '2022-05-15').primaryMasterKey
 
 var environments = {
   test: {
-    api_vnetName: 'INT-Sandbox'
-    api_subnetName: 'snet-booking-test'
-    api_subnetResourceGroup: 'SandboxNetworking'
-    ui_api_vnetName: 'INT-Sandbox'
-    ui_api_subnetName: 'snet-booking-ui-api-test'
+    api_vnetName: 'INT-Sandbox',
+    api_subnetName: 'snet-booking-test',
+    api_subnetResourceGroup: 'SandboxNetworking',
+    ui_api_vnetName: 'INT-Sandbox',
+    ui_api_subnetName: 'snet-booking-ui-api-test',
     ui_api_subnetResourceGroup: 'SandboxNetworking'
-  }
+  },
   qa: {
-    api_vnetName: 'INT-Sandbox'
-    api_subnetName: 'snet-booking-qa'
-    api_subnetResourceGroup: 'SandboxNetworking'
-    ui_api_vnetName: 'INT-Sandbox'
-    ui_api_subnetName: 'snet-booking-ui-api-qa'
+    api_vnetName: 'INT-Sandbox',
+    api_subnetName: 'snet-booking-qa',
+    api_subnetResourceGroup: 'SandboxNetworking',
+    ui_api_vnetName: 'INT-Sandbox',
+    ui_api_subnetName: 'snet-booking-ui-api-qa',
     ui_api_subnetResourceGroup: 'SandboxNetworking'
-  }
+  },
   prod: {
-    api_vnetName: 'INT-Prod'
-    api_subnetName: 'snet-booking-prod'
-    api_subnetResourceGroup: 'ProdNetworking'
-    ui_api_vnetName: 'INT-Prod'
-    ui_api_subnetName: 'snet-booking-ui-api-prod'
+    api_vnetName: 'INT-Prod',
+    api_subnetName: 'snet-booking-prod',
+    api_subnetResourceGroup: 'ProdNetworking',
+    ui_api_vnetName: 'INT-Prod',
+    ui_api_subnetName: 'snet-booking-ui-api-prod',
     ui_api_subnetResourceGroup: 'ProdNetworking'
   }
 }
@@ -38,19 +38,20 @@ resource appPlan 'Microsoft.Web/serverFarms@2021-02-01' = {
   params: {
     capacity: 1
     isReserved: false
-    planKind: 'app,windows'
-    planName: 'booking-plan-${env}'
-    sku: 'P1v3'
-    skuCode: 'B1'
+    kind: 'app, windows'
+    name: 'booking-plan-${env}'
+    sku: {
+      tier: 'P1V3'
+      name: 'P1v3'
+    }
   }
 }
-
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' = {
   name: 'bookingApiAppInsights'
   params: {
-    name: 'appi-booking-${env}'
-    location: location
+    ApplicationId: 'appi-booking-${env}'
+    Location: location
   }
 }
 
@@ -61,14 +62,13 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
     appInsights
   ]
   params: {
-    appServiceName: 'app-booking-api-${env}'
-    appServicePlanName: appPlan.outputs.appPlanName
+    name: 'app-booking-api-${env}'
+    plan: appPlan.outputs.name
     datadogAPIKey: ''
     datadogServiceName: 'booking API ${env}'  
-    isAppServiceAlwaysOn: false
-    isAppServicePublic: true
+    alwaysOn: false
+    clientAffinityEnabled: true
     location: location
-    isVnetIntegrated: true
     vnetName: environments[env].api_vnetName
     subnetName: environments[env].api_subnetName
     subnetResourceGroup: environments[env].api_subnetResourceGroup
