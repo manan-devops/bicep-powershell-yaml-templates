@@ -1,3 +1,5 @@
+#A bicep template that deploys app plans, app service with configuration to DEV, QA and Prod stage
+
 param env string
 @secure()
 param ddApiKey string
