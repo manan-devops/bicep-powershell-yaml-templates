@@ -1,10 +1,7 @@
-// A bicep template that deploys app plans, app service with configuration to DEV, QA and Prod stage
+// A bicep template that deploys app plans and app services with configuration to DEV, QA, and Prod stages
 
 param env string
-@secure()
-param ddApiKey string
 param location string
-var cosmosDbKey = listKeys(resourceId(resourceGroup().name, 'Microsoft.DocumentDB/databaseAccounts', 'cosmos-booking-cus-${env}'), '2022-05-15').primaryMasterKey
 
 var environments = {
   test: {
@@ -47,42 +44,18 @@ resource appPlan 'Microsoft.Web/serverFarms@2021-02-01' = {
   }
 }
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' = {
-  name: 'bookingApiAppInsights'
-  params: {
-    ApplicationId: 'appi-booking-${env}'
-    Location: location
-  }
-}
-
 resource appService 'Microsoft.Web/sites@2021-02-01' = {
   name: 'appService-booking-api-${env}'
   dependsOn: [
     appPlan
-    appInsights
   ]
   params: {
     name: 'app-booking-api-${env}'
     plan: appPlan.outputs.name
-    datadogAPIKey: ''
-    datadogServiceName: 'booking API ${env}'  
-    alwaysOn: false
-    clientAffinityEnabled: true
     location: location
     vnetName: environments[env].api_vnetName
     subnetName: environments[env].api_subnetName
     subnetResourceGroup: environments[env].api_subnetResourceGroup
-    infraOnlyAppSettings: {
-      WEBSITE_RUN_FROM_PACKAGE: 1
-      DD_API_KEY: ddApiKey
-      APPINSIGHTS_INSTRUMENTATIONKEY: appInsights.outputs.instrumentationKey
-      APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.outputs.connectionString
-      Cosmos__endpointUrl: 'https://cosmos-booking-cus-${env}.documents.azure.com:443/'
-      Cosmos__key: cosmosDbKey
-      Serilog__WriteTo__1__Args__apiKey: ddApiKey
-      Serilog__WriteTo__1__Args__source: 'booking API ${env}'
-      Serilog__WriteTo__1__Args__service: 'booking API ${env}'
-    }
     siteConfig: {
       netFrameworkVersion: 'v6.0'
     }
