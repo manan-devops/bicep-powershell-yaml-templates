@@ -59,5 +59,11 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
     siteConfig: {
       netFrameworkVersion: 'v6.0'
     }
+    appSettings: [
+      {
+        name: 'MY_CUSTOM_SETTING',
+        value: 'custom value'
+      }
+    ]
   }
 }
